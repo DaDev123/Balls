@@ -210,5 +210,23 @@ void updateDrawHook(al::ExecuteDirector* thisPtr, const char* listName, const ch
     thisPtr->drawList(listName, kit);
 }
 
-bool unlockCostumeDoorsInv() { return !StageSceneStateServerConfig::areCostumeDoorsUnlocked; }
-bool unlockCostumeDoors()    { return !StageSceneStateServerConfig::areCostumeDoorsUnlocked; }
+bool unlockCostumeDoors1(al::IUseStageSwitch* user, const char* switchName, const al::FunctorBase* functor) {
+    if (StageSceneStateServerConfig::areCostumeDoorsUnlocked) {
+        return false;
+    }
+    return al::listenStageSwitchOn(user, switchName, functor);
+}
+
+bool unlockCostumeDoors2(const char* leftStr, const char* rightStr) {
+    if (StageSceneStateServerConfig::areCostumeDoorsUnlocked) {
+        return true;
+    }
+    return al::isEqualString(leftStr, rightStr);
+}
+
+bool unlockCostumeDoors3(const char* leftStr, const char* rightStr) {
+    if (StageSceneStateServerConfig::areCostumeDoorsUnlocked) {
+        return false;
+    }
+    return al::isEqualString(leftStr, rightStr);
+}

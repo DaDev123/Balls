@@ -181,6 +181,7 @@ namespace al {
 
     LiveActor* getSubActor(const LiveActor*, const char*); //NOTE: unknown return type
 
+    bool listenStageSwitchOn(IUseStageSwitch *, const char *, al::FunctorBase const*);
     bool listenStageSwitchOnAppear(IUseStageSwitch *, al::FunctorBase const &functor);
 }
 
