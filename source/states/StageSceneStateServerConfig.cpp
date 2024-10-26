@@ -17,6 +17,8 @@
 #include "server/gamemode/GameModeFactory.hpp"
 #include "server/gamemode/GameModeManager.hpp"
 
+bool StageSceneStateServerConfig::areCostumeDoorsUnlocked = false;
+
 StageSceneStateServerConfig::StageSceneStateServerConfig(
     const char* name,
     al::Scene* scene,
@@ -48,6 +50,7 @@ StageSceneStateServerConfig::StageSceneStateServerConfig(
     mMainMenuOptions->mBuffer[ServerConfigOption::SETIP].copy(u"Change Server (needs restart)");
     mMainMenuOptions->mBuffer[ServerConfigOption::SETPORT].copy(u"Change Port (needs restart)");
     mMainMenuOptions->mBuffer[ServerConfigOption::HIDESERVER].copy(u"Hide Server in Debug (OFF)"); // TBD
+    mMainMenuOptions->mBuffer[ServerConfigOption::COSTUMEDOORS].copy(u"Unlock Costume Doors (OFF)"); // TBD
 
     mMainOptionsList->addStringData(getMainMenuOptions(), "TxtContent");
 
@@ -170,6 +173,10 @@ void StageSceneStateServerConfig::exeMainMenu() {
                 al::setNerve(this, &nrvStageSceneStateServerConfigHideServer);
                 break;
             }
+            case ServerConfigOption::COSTUMEDOORS: {
+                al::setNerve(this, &nrvStageSceneStateServerConfigCostumeDoors);
+                break;
+            }
             default: {
                 kill();
                 break;
@@ -219,10 +226,16 @@ void StageSceneStateServerConfig::exeOpenKeyboardPort() {
 void StageSceneStateServerConfig::exeHideServer() {
     if (al::isFirstStep(this)) {
         Client::toggleServerHidden();
-        mMainOptionsList->initDataNoResetSelected(mMainMenuOptionsCount);
-        mMainOptionsList->addStringData(getMainMenuOptions(), "TxtContent");
-        mMainOptionsList->updateParts();
+        mainMenuRefresh();
         al::setNerve(this, &nrvStageSceneStateServerConfigSaveData);
+    }
+}
+
+void StageSceneStateServerConfig::exeCostumeDoors() {
+    if (al::isFirstStep(this)) {
+        areCostumeDoorsUnlocked = !areCostumeDoorsUnlocked;
+        mainMenuRefresh();
+        al::setNerve(this, &nrvStageSceneStateServerConfigMainMenu);
     }
 }
 
@@ -341,11 +354,23 @@ void StageSceneStateServerConfig::subMenuRefresh() {
     activateInput();
 }
 
+void StageSceneStateServerConfig::mainMenuRefresh() {
+    mMainOptionsList->initDataNoResetSelected(mMainMenuOptionsCount);
+    mMainOptionsList->addStringData(getMainMenuOptions(), "TxtContent");
+    mMainOptionsList->updateParts();
+}
+
 const sead::WFixedSafeString<0x200>* StageSceneStateServerConfig::getMainMenuOptions() {
     mMainMenuOptions->mBuffer[ServerConfigOption::HIDESERVER].copy(
         Client::isServerHidden()
         ? u"Hide Server in Debug (ON) "
         : u"Hide Server in Debug (OFF)"
+    );
+
+    mMainMenuOptions->mBuffer[ServerConfigOption::COSTUMEDOORS].copy(
+        areCostumeDoorsUnlocked
+        ? u"Unlock Costume Doors (ON) "
+        : u"Unlock Costume Doors (OFF)"
     );
 
     return mMainMenuOptions->mBuffer;
@@ -370,6 +395,7 @@ namespace {
     NERVE_IMPL(StageSceneStateServerConfig, OpenKeyboardIP)
     NERVE_IMPL(StageSceneStateServerConfig, OpenKeyboardPort)
     NERVE_IMPL(StageSceneStateServerConfig, HideServer)
+    NERVE_IMPL(StageSceneStateServerConfig, CostumeDoors)
     NERVE_IMPL(StageSceneStateServerConfig, GamemodeConfig)
     NERVE_IMPL(StageSceneStateServerConfig, GamemodeSelect)
     NERVE_IMPL(StageSceneStateServerConfig, SaveData)

@@ -34,6 +34,7 @@ class StageSceneStateServerConfig : public al::HostStateBase<al::Scene>, public 
             SETIP,
             SETPORT,
             HIDESERVER,
+            COSTUMEDOORS,
         };
 
         virtual al::MessageSystem* getMessageSystem(void) const override;
@@ -47,14 +48,18 @@ class StageSceneStateServerConfig : public al::HostStateBase<al::Scene>, public 
         void exeHideServer();
         void exeGamemodeConfig();
         void exeGamemodeSelect();
+        void exeCostumeDoors();
         void exeSaveData();
 
         void endSubMenu();
+
+        static bool areCostumeDoorsUnlocked;
 
     private:
         inline void subMenuStart();
         inline void subMenuUpdate();
         inline void subMenuRefresh();
+        inline void mainMenuRefresh();
 
         al::MessageSystem* mMsgSystem      = nullptr;
         FooterParts*       mFooterParts    = nullptr;
@@ -86,7 +91,7 @@ class StageSceneStateServerConfig : public al::HostStateBase<al::Scene>, public 
         inline void deactivateInput();
 
         // Main Menu Options
-        static constexpr int mMainMenuOptionsCount = 5;
+        static constexpr int mMainMenuOptionsCount = 6;
         sead::SafeArray<sead::WFixedSafeString<0x200>, mMainMenuOptionsCount>* mMainMenuOptions = nullptr;
         const sead::WFixedSafeString<0x200>* getMainMenuOptions();
 
@@ -98,6 +103,7 @@ namespace {
     NERVE_HEADER(StageSceneStateServerConfig, OpenKeyboardIP)
     NERVE_HEADER(StageSceneStateServerConfig, OpenKeyboardPort)
     NERVE_HEADER(StageSceneStateServerConfig, HideServer)
+    NERVE_HEADER(StageSceneStateServerConfig, CostumeDoors)
     NERVE_HEADER(StageSceneStateServerConfig, GamemodeConfig)
     NERVE_HEADER(StageSceneStateServerConfig, GamemodeSelect)
     NERVE_HEADER(StageSceneStateServerConfig, SaveData)

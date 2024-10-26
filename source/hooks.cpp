@@ -209,3 +209,6 @@ void updateDrawHook(al::ExecuteDirector* thisPtr, const char* listName, const ch
     Logger::log("Updating Draw List for: %s %s\n", listName, kit);
     thisPtr->drawList(listName, kit);
 }
+
+bool unlockCostumeDoorsInv() { return !StageSceneStateServerConfig::areCostumeDoorsUnlocked; }
+bool unlockCostumeDoors()    { return !StageSceneStateServerConfig::areCostumeDoorsUnlocked; }
