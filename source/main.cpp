@@ -496,6 +496,61 @@ void seadPrintHook(const char* fmt, ...) {
     va_end(args);
 }
 
+class Shine;
+
+namespace rs {
+    bool requestStartDemoShineGet(Shine*);
+}
+
+bool moonCutsceneReplace(void* shine){
+    if(!globalScene || !globalScene->mIsAlive)
+        return false;
+    globalScene->mSceneLayout->startShineCountAnim(false);
+    globalScene->mSceneLayout->updateCounterParts();
+    PlayerActorHakoniwa* player = (PlayerActorHakoniwa*) rs::getPlayerActor(globalScene);
+    if(!player)
+        return false;
+    const char* curPlayerAnim = player->mPlayerAnimator->curAnim.cstr();
+    if((al::isEqualSubString(curPlayerAnim, "Motorcycle") || al::isEqualSubString(curPlayerAnim, "SphinxRide")) || (player->mHackKeeper && player->mHackKeeper->currentHackActor))
+        return true;
+    player->startDemoPuppetable();
+    auto* transPtr = al::getTransPtr(player);
+    transPtr->y += 30;
+    player->endDemoPuppetable();
+    return true;
+}
+
+bool storyMoonCutsceneReplace(void* shine){
+    if(!globalScene || !globalScene->mIsAlive)
+        return false;
+    globalScene->kill();
+    return true;
+}
+
+namespace al {
+    bool trySyncStageSwitchAppearAndKill(LiveActor*);
+    const char* getModelName(const LiveActor* actor);
+    void startNerveAction(LiveActor*, const char*);
+}
+
+bool fixMapPartsInitHook(al::LiveActor* thisPtr){
+    const char* modelName = al::getModelName(thisPtr);
+    //if(!modelName)
+        //return al::trySyncStageSwitchAppearAndKill(thisPtr); //Orig
+    if(al::isEqualString(modelName, "LaLumiere"))
+       barrierOn = thisPtr;
+    if(al::isEqualString(modelName, "LaLumiereOFF"))
+        barrierOff = thisPtr;
+    return al::trySyn.cStageSwitchAppearAndKill(thisPtr); //Orig
+}
+
+void barrierAppearHook(al::LiveActor* thisPtr, const char* actionName){
+    if(al::isEqualString(GameDataFunction::getCurrentStageName(thisPtr), "SkyWorldHomeStage") && al::calcDistanceH(thisPtr, sead::Vector3f{5722.f, 29000.f, -41583.f}) < 200)
+        //thisPtr->kill();
+    al::startNerveAction(thisPtr, "Disappear");
+    else
+        al::startNerveAction(thisPtr, actionName);
+}
 
 bool checkAssistMode(GameDataHolderAccessor accessor){
     return !rs::isKidsMode(accessor.mData);
