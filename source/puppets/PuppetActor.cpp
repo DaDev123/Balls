@@ -299,7 +299,7 @@ void compassPlayerDirHook(sead::Vector3f* out){
         *out = sead::Vector3f::zero;
         return;
     }
-    auto playerPos = al::getTrans(rs::getPlayerActor(curSeq->curScene));
+    auto playerPos = al::getTrans(rs::getPlayerPos(curSeq->curScene));
     *out = *curRunnerActorPos - playerPos;
     out->y = 0;
     out->normalize();
