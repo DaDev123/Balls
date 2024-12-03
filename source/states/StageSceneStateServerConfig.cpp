@@ -149,10 +149,6 @@ void StageSceneStateServerConfig::exeMainMenu() {
                 al::setNerve(this, &nrvStageSceneStateServerConfigGamemodeConfig);
                 break;
             }
-            case ServerConfigOption::GAMEMODESWITCH: {
-                al::setNerve(this, &nrvStageSceneStateServerConfigGamemodeSelect);
-                break;
-            }
             case ServerConfigOption::SETIP: {
                 al::setNerve(this, &nrvStageSceneStateServerConfigOpenKeyboardIP);
                 break;
@@ -253,26 +249,6 @@ void StageSceneStateServerConfig::exeGamemodeConfig() {
     }
 }
 
-void StageSceneStateServerConfig::exeGamemodeSelect() {
-    if (al::isFirstStep(this)) {
-        mModeSelectList->mCurSelected = GameModeManager::instance()->getNextGameMode() - 1;
-
-        mCurrentList = mModeSelectList;
-        mCurrentMenu = mModeSelect;
-
-        subMenuStart();
-    }
-
-    subMenuUpdate();
-
-    if (mIsDecideConfig && mCurrentList->isDecideEnd()) {
-        Logger::log("Setting Server Mode to: %d\n", mCurrentList->mCurSelected + 1);
-        GameModeManager::instance()->setMode(static_cast<GameMode>(mCurrentList->mCurSelected + 1));
-        mainMenuRefresh();
-        endSubMenu();
-    }
-}
-
 void StageSceneStateServerConfig::exeSaveData() {
     if (al::isFirstStep(this)) {
         SaveDataAccessFunction::startSaveDataWrite(mGameDataHolder);
@@ -352,12 +328,6 @@ const sead::WFixedSafeString<0x200>* StageSceneStateServerConfig::getMainMenuOpt
     strcat(gameModeConfig, " Config");
     mMainMenuOptions->mBuffer[ServerConfigOption::GAMEMODECONFIG].convertFromMultiByteString(gameModeConfig, size);
 
-    mMainMenuOptions->mBuffer[ServerConfigOption::GAMEMODESWITCH].copy(
-        GameModeManager::instance()->getInfo<GameModeInfoBase>()
-        ? u"Change Gamemode (needs reload)"
-        : u"Change Gamemode               "
-    );
-
     // "Hide Server in Debug" option
     mMainMenuOptions->mBuffer[ServerConfigOption::HIDESERVER].copy(
         Client::isServerHidden()
@@ -388,6 +358,5 @@ namespace {
     NERVE_IMPL(StageSceneStateServerConfig, OpenKeyboardPort)
     NERVE_IMPL(StageSceneStateServerConfig, HideServer)
     NERVE_IMPL(StageSceneStateServerConfig, GamemodeConfig)
-    NERVE_IMPL(StageSceneStateServerConfig, GamemodeSelect)
     NERVE_IMPL(StageSceneStateServerConfig, SaveData)
 }
