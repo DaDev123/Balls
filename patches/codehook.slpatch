@@ -140,6 +140,7 @@ B59E28 B seadPrintHook // sead::system::print
 51b280 B freezeKidsMode // Forces kids mode to be enabled during Freeze Tag
 1cfba0 BL freezeMoonHitboxDisable // When mode enabled, disable hitboxes with moons to avoid softlocks
 
+
 1F756C BL overwriteCompassNorthDir
 1F7594 BL compassPlayerDirHook
 
