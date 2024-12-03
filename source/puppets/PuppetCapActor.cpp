@@ -12,6 +12,9 @@
 
 #include "server/gamemode/GameModeManager.hpp"
 
+bool PuppetCapActor::sIsPlayerInSafeZone = true;
+int PuppetCapActor::sInvincibilityFromPunchAnim;
+
 PuppetCapActor::PuppetCapActor(const char* name) : al::LiveActor(name) {}
 
 void PuppetCapActor::init(al::ActorInitInfo const& initInfo) {
