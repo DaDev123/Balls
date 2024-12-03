@@ -336,8 +336,6 @@ void sendShinePacket(GameDataHolderAccessor thisPtr, Shine* curShine) {
 }
 
 void stageInitHook(
-    barrierOn = nullptr;
-    barrierOff = nullptr;
     al::ActorInitInfo* info,
     StageScene* curScene,
     al::PlacementInfo const* placement,
@@ -346,6 +344,8 @@ void stageInitHook(
     al::SceneMsgCtrl* sceneMsgCtrl,
     al::GameDataHolderBase* dataHolder
 ) {
+    barrierOn = nullptr;
+    barrierOff = nullptr;
     al::initActorInitInfo(info, curScene, placement, lytInfo, factory, sceneMsgCtrl, dataHolder);
 
     Client::clearArrays();
