@@ -495,3 +495,8 @@ void seadPrintHook(const char* fmt, ...) {
 
     va_end(args);
 }
+
+
+bool checkAssistMode(GameDataHolderAccessor accessor){
+    return !rs::isKidsMode(accessor.mData);
+}
