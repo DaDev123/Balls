@@ -257,15 +257,6 @@ void PuppetActor::makeActorDead() {
     al::LiveActor::makeActorDead();
 }
 
-bool overwriteCompassNorthDir(sead::Vector3f* out, const al::IUseSceneObjHolder*){
-    
-    auto* curSeq = (HakoniwaSequence*) GameSystemFunction::getGameSystem()->mSequence;
-    al::calcCameraFront(out, curSeq->curScene, 0);
-    out->y = 0;
-    out->normalize();
-    return true;
-}
-
 void compassPlayerDirHook(sead::Vector3f* out){
     if(!curRunnerActorPos){
         *out = sead::Vector3f::zero;
