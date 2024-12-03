@@ -30,7 +30,6 @@ class StageSceneStateServerConfig : public al::HostStateBase<al::Scene>, public 
 
         enum ServerConfigOption {
             GAMEMODECONFIG,
-            GAMEMODESWITCH,
             SETIP,
             SETPORT,
             HIDESERVER,
@@ -46,7 +45,6 @@ class StageSceneStateServerConfig : public al::HostStateBase<al::Scene>, public 
         void exeOpenKeyboardPort();
         void exeHideServer();
         void exeGamemodeConfig();
-        void exeGamemodeSelect();
         void exeSaveData();
 
         void endSubMenu();
@@ -100,6 +98,5 @@ namespace {
     NERVE_HEADER(StageSceneStateServerConfig, OpenKeyboardPort)
     NERVE_HEADER(StageSceneStateServerConfig, HideServer)
     NERVE_HEADER(StageSceneStateServerConfig, GamemodeConfig)
-    NERVE_HEADER(StageSceneStateServerConfig, GamemodeSelect)
     NERVE_HEADER(StageSceneStateServerConfig, SaveData)
 }
