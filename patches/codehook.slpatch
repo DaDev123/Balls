@@ -144,10 +144,6 @@ B59E28 B seadPrintHook // sead::system::print
 1F756C BL overwriteCompassNorthDir
 1F7594 BL compassPlayerDirHook
 
-43f83c NOP
-
-//53896c NOP
-
 //Compass
 1F72B4 BL checkAssistMode
 
