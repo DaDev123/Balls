@@ -46,13 +46,13 @@
 
 #include "rs/util.hpp"
 
+static int pInfSendTimer = 0;
+static int gameInfSendTimer = 0;
+
 al::LiveActor* barrierOn = nullptr;
 al::LiveActor* barrierOff = nullptr;
 StageScene* globalScene = nullptr;
 bool doMoonCutsceneSkip = true;
-
-static int pInfSendTimer = 0;
-static int gameInfSendTimer = 0;
 
 void updatePlayerInfo(GameDataHolderAccessor holder, PlayerActorBase* playerBase, bool isYukimaru) {
     if (pInfSendTimer >= 3) {
@@ -336,6 +336,8 @@ void sendShinePacket(GameDataHolderAccessor thisPtr, Shine* curShine) {
 }
 
 void stageInitHook(
+    barrierOn = nullptr;
+    barrierOff = nullptr;
     al::ActorInitInfo* info,
     StageScene* curScene,
     al::PlacementInfo const* placement,
@@ -424,6 +426,16 @@ bool hakoniwaSequenceHook(HakoniwaSequence* sequence) {
 
     static bool isDisableMusic = false;
 
+    PlayerActorHakoniwa* player = (PlayerActorHakoniwa*) playerBase;
+    if(isInGame && player){
+        if(PuppetCapActor::sInvincibilityFromPunchAnim > 0)
+            PuppetCapActor::sInvincibilityFromPunchAnim--;
+
+        const char* curPlayerAnim = player->mPlayerAnimator->curAnim.cstr();
+        if(curPlayerAnim && al::isEqualSubString(curPlayerAnim, "KoopaCapPunch"))
+            PuppetCapActor::sInvincibilityFromPunchAnim = 120;
+    }
+    
     if (al::isPadHoldZR(-1)) {
         if (al::isPadTriggerUp(-1)) { // ZR + Up => Debug menu
             debugMode = !debugMode;
@@ -468,8 +480,8 @@ bool hakoniwaSequenceHook(HakoniwaSequence* sequence) {
         
         
     } else if (al::isPadHoldL(-1)) {
-        if (al::isPadTriggerLeft(-1)) { // L + Left => Activate gamemode
-            GameModeManager::instance()->toggleActive();
+        if(al::isPadTriggerR(-1)){
+            doMoonCutsceneSkip = !doMoonCutsceneSkip;
         }
         if (al::isPadTriggerUp(-1)) { // L + Up => Disable background music
             isDisableMusic = !isDisableMusic;
@@ -489,7 +501,24 @@ bool hakoniwaSequenceHook(HakoniwaSequence* sequence) {
         }
     }
 
+    if(!barrierOn || !barrierOff)
+        return isFirstStep;
+    
+    al::LiveActor* firstPuppet = Client::getPuppet(0);
+    al::LiveActor* checkDistanceTo = firstPuppet && al::isAlive(firstPuppet) && !rs::isKidsMode(stageScene) ? firstPuppet : playerBase;
+
+    if(al::calcDistanceH(checkDistanceTo, barrierOn) < 1640.f){
+        al::hideModelIfShow(barrierOff);
+        al::showModelIfHide(barrierOn);
+        PuppetCapActor::sIsPlayerInSafeZone = true;
+    }else {
+        al::showModelIfHide(barrierOff);
+        al::hideModelIfShow(barrierOn);
+        PuppetCapActor::sIsPlayerInSafeZone = false;
+    }
+
     return isFirstStep;
+    
 }
 
 void seadPrintHook(const char* fmt, ...) {
