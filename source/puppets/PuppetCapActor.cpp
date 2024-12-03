@@ -77,6 +77,13 @@ void PuppetCapActor::attackSensor(al::HitSensor* sender, al::HitSensor* receiver
         return;
     }
 
+    
+    }else{
+        auto* receiverHost = al::getSensorHost(receiver);
+        auto* player = (PlayerActorHakoniwa*) al::getPlayerActor(receiverHost, 0);
+        if(!PuppetCapActor::sIsPlayerInSafeZone && player && player->mHackKeeper && player->mHackKeeper->currentHackActor && player->mHackKeeper->currentHackActor == receiverHost)
+            al::sendMsgEnemyAttack(receiver, sender);
+    }
     if (al::isSensorPlayer(receiver) && al::isSensorName(sender, "Push")) {
         rs::sendMsgPushToPlayer(receiver, sender);
     }
