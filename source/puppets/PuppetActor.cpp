@@ -41,6 +41,8 @@
 #include "server/DeltaTime.hpp"
 #include "server/gamemode/GameModeManager.hpp"
 #include "game/HakoniwaSequence/HakoniwaSequence.h"
+#include "game/Player/PlayerActorHakoniwa.h"
+
 
 namespace al {
     class IUseCamera;
@@ -286,7 +288,6 @@ void PuppetActor::makeActorDead() {
 
 bool overwriteCompassNorthDir(sead::Vector3f* out, const al::IUseSceneObjHolder*){
     
-    auto* curSeq = (HakoniwaSequence*) GameSystemFunction::getGameSystem()->mSequence;
     al::calcCameraFront(out, curSeq->curScene, 0);
     out->y = 0;
     out->normalize();
@@ -298,7 +299,6 @@ void compassPlayerDirHook(sead::Vector3f* out){
         *out = sead::Vector3f::zero;
         return;
     }
-    auto* curSeq = (HakoniwaSequence*) GameSystemFunction::getGameSystem()->mSequence;
     auto playerPos = al::getTrans(rs::getPlayerActor(curSeq->curScene));
     *out = *curRunnerActorPos - playerPos;
     out->y = 0;
