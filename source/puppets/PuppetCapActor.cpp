@@ -73,10 +73,6 @@ void PuppetCapActor::update() {
 }
 
 void PuppetCapActor::attackSensor(al::HitSensor* sender, al::HitSensor* receiver) {
-    if (!GameModeManager::hasCappyCollision()) {
-        return;
-    }
-
     
     }else{
         auto* receiverHost = al::getSensorHost(receiver);
