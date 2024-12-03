@@ -260,7 +260,7 @@ bool HideAndSeekMode::showNameTag(PuppetInfo* other) {
 }
 
 void HideAndSeekMode::debugMenuControls(sead::TextWriter* gTextWriter) {
-    gTextWriter->printf("- [MH][Gravity] L + → | Toggle gravity camera\n");
+    gTextWriter->printf(" Balls :D");
 }
 
 void HideAndSeekMode::updateTagState(bool isSeeking) {

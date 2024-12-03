@@ -14,7 +14,7 @@ GameModeConfigMenu* createGameModeConfigMenu(const char* name) {
 };
 
 __attribute((used)) constexpr al::NameToCreator<createMenu> menuTable[] = {
-    { "ManHunt", &createGameModeConfigMenu<HideAndSeekConfigMenu> },
+    { "Player", &createGameModeConfigMenu<HideAndSeekConfigMenu> },
     { "Sardine",     &createGameModeConfigMenu<SardineConfigMenu>     },
     { "FreezeTag",   &createGameModeConfigMenu<FreezeTagConfigMenu>   },
 };
