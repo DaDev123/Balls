@@ -1,8 +1,3 @@
-
-
-
-#include <cmath>
-#include <cstddef>
 #include "al/model/PartsModel.h"
 #include "al/util/SensorUtil.h"
 #include "game/Player/PlayerCostumeFunction.h"
