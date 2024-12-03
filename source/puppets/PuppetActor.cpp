@@ -1,22 +1,4 @@
 
-#include "al/model/PartsModel.h"
-#include "al/util/SensorUtil.h"
-#include "game/Player/PlayerCostumeFunction.h"
-#include "game/Player/PlayerCostumeInfo.h"
-#include "rs/util/SensorUtil.h"
-#include "server/Client.hpp"
-#include "al/LiveActor/LiveActor.h"
-#include "al/layout/BalloonMessage.h"
-#include "al/layout/LayoutInitInfo.h"
-#include "al/string/StringTmp.h"
-#include "al/util.hpp"
-#include "al/util/LiveActorUtil.h"
-#include "algorithms/CaptureTypes.h"
-#include "logger.hpp"
-#include "actors/PuppetActor.h"
-#include "math/seadQuat.h"
-#include "math/seadVector.h"
-
 #include <cmath>
 #include <cstddef>
 
@@ -284,25 +266,7 @@ void PuppetActor::makeActorDead() {
     }
 
     al::LiveActor::makeActorDead();
-}
 
-bool overwriteCompassNorthDir(sead::Vector3f* out, const al::IUseSceneObjHolder*){
-    
-    al::calcCameraFront(out, curSeq->curScene, 0);
-    out->y = 0;
-    out->normalize();
-    return true;
-}
-
-void compassPlayerDirHook(sead::Vector3f* out){
-    if(!curRunnerActorPos){
-        *out = sead::Vector3f::zero;
-        return;
-    }
-    auto playerPos = al::getTrans(rs::getPlayerPos(curSeq->curScene));
-    *out = *curRunnerActorPos - playerPos;
-    out->y = 0;
-    out->normalize();
 }
 
 void PuppetActor::attackSensor(al::HitSensor* source, al::HitSensor* target) {
