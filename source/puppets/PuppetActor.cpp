@@ -1,4 +1,5 @@
 #include "actors/PuppetActor.h"
+#include "server/Client.hpp"
 
 #include <cmath>
 #include <cstddef>
@@ -23,6 +24,7 @@
 
 #include "server/DeltaTime.hpp"
 #include "server/gamemode/GameModeManager.hpp"
+#include "game/HakoniwaSequence/HakoniwaSequence.h"
 
 namespace al {
     class IUseCamera;
