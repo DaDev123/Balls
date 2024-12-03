@@ -257,6 +257,27 @@ void PuppetActor::makeActorDead() {
     al::LiveActor::makeActorDead();
 }
 
+bool overwriteCompassNorthDir(sead::Vector3f* out, const al::IUseSceneObjHolder*){
+    
+    auto* curSeq = (HakoniwaSequence*) GameSystemFunction::getGameSystem()->mSequence;
+    al::calcCameraFront(out, curSeq->curScene, 0);
+    out->y = 0;
+    out->normalize();
+    return true;
+}
+
+void compassPlayerDirHook(sead::Vector3f* out){
+    if(!curRunnerActorPos){
+        *out = sead::Vector3f::zero;
+        return;
+    }
+    auto* curSeq = (HakoniwaSequence*) GameSystemFunction::getGameSystem()->mSequence;
+    auto playerPos = al::getTrans(rs::getPlayerActor(curSeq->curScene));
+    *out = *curRunnerActorPos - playerPos;
+    out->y = 0;
+    out->normalize();
+}
+
 void PuppetActor::attackSensor(al::HitSensor* source, al::HitSensor* target) {
     if (!GameModeManager::hasMarioCollision()) {
         return;
