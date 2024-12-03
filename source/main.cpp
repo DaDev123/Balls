@@ -546,7 +546,7 @@ bool fixMapPartsInitHook(al::LiveActor* thisPtr){
        barrierOn = thisPtr;
     if(al::isEqualString(modelName, "LaLumiereOFF"))
         barrierOff = thisPtr;
-    return al::trySyn.cStageSwitchAppearAndKill(thisPtr); //Orig
+    return al::trySyncStageSwitchAppearAndKill(thisPtr); //Orig
 }
 
 void barrierAppearHook(al::LiveActor* thisPtr, const char* actionName){
