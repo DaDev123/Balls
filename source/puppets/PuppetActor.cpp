@@ -24,6 +24,11 @@
 #include "server/DeltaTime.hpp"
 #include "server/gamemode/GameModeManager.hpp"
 
+namespace al {
+    class IUseCamera;
+    void calcCameraFront(sead::Vector3<float>*, al::IUseCamera const*, int);
+}
+
 static const char* subActorNames[] = {
     "顔", // Face
     "目", // Eye
@@ -255,6 +260,15 @@ void PuppetActor::makeActorDead() {
     }
 
     al::LiveActor::makeActorDead();
+}
+
+bool overwriteCompassNorthDir(sead::Vector3f* out, const al::IUseSceneObjHolder*){
+    
+    auto* curSeq = (HakoniwaSequence*) GameSystemFunction::getGameSystem()->mSequence;
+    al::calcCameraFront(out, curSeq->curScene, 0);
+    out->y = 0;
+    out->normalize();
+    return true;
 }
 
 void compassPlayerDirHook(sead::Vector3f* out){
