@@ -46,6 +46,11 @@
 
 #include "rs/util.hpp"
 
+al::LiveActor* barrierOn = nullptr;
+al::LiveActor* barrierOff = nullptr;
+StageScene* globalScene = nullptr;
+bool doMoonCutsceneSkip = true;
+
 static int pInfSendTimer = 0;
 static int gameInfSendTimer = 0;
 
