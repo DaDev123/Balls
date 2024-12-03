@@ -37,6 +37,9 @@ namespace rs {
     ChangeStageInfo *createChangeStageInfo(const al::LiveActor *, const al::PlacementInfo *);
 
     bool isPlayerDamageStopDemo(const al::LiveActor *);
+    
+    bool isKidsMode(const al::Scene*);
+    bool isKidsMode(const GameDataHolder*);
 
     PlayerActorBase * getPlayerActor(const al::Scene *);
 
