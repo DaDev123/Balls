@@ -260,7 +260,6 @@ void PuppetActor::makeActorDead() {
 
     if (mFreezeTagIceBlock) {
         mFreezeTagIceBlock->makeActorDead();
-    }
 
     al::LiveActor::makeActorDead();
 }
