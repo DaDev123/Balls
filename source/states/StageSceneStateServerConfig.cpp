@@ -50,8 +50,7 @@ StageSceneStateServerConfig::StageSceneStateServerConfig(
     mMainOptionsList->initDataNoResetSelected(mMainMenuOptionsCount);
 
     mMainMenuOptions = new sead::SafeArray<sead::WFixedSafeString<0x200>, mMainMenuOptionsCount>();
-    mMainMenuOptions->mBuffer[ServerConfigOption::GAMEMODECONFIG].copy(u"Gamemode Config");
-    mMainMenuOptions->mBuffer[ServerConfigOption::GAMEMODESWITCH].copy(u"Change Gamemode               "); // TBD
+    mMainMenuOptions->mBuffer[ServerConfigOption::GAMEMODECONFIG].copy(u"Player Config");
     mMainMenuOptions->mBuffer[ServerConfigOption::SETIP].copy(u"Change Server (needs restart)");
     mMainMenuOptions->mBuffer[ServerConfigOption::SETPORT].copy(u"Change Port (needs restart)");
     mMainMenuOptions->mBuffer[ServerConfigOption::HIDESERVER].copy(u"Hide Server in Debug (OFF)"); // TBD

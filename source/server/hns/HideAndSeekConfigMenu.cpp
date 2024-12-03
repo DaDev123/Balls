@@ -4,7 +4,7 @@
 
 HideAndSeekConfigMenu::HideAndSeekConfigMenu() : GameModeConfigMenu() {
     mItems = new sead::SafeArray<sead::WFixedSafeString<0x200>, mItemCount>();
-    mItems->mBuffer[0].copy(u"Toggle H&S Gravity (OFF)");
+    mItems->mBuffer[0].copy(u"Toggle ManHunt Gravity (OFF)");
     mItems->mBuffer[1].copy(u"Mario Collision (ON)    ");
     mItems->mBuffer[2].copy(u"Mario Bounce (ON)       ");
     mItems->mBuffer[3].copy(u"Cappy Collision (OFF)   ");
@@ -15,8 +15,8 @@ const sead::WFixedSafeString<0x200>* HideAndSeekConfigMenu::getStringData() {
     // Gravity
     const char16_t* gravity = (
         HideAndSeekInfo::mIsUseGravity
-        ? u"Toggle H&S Gravity (ON) "
-        : u"Toggle H&S Gravity (OFF)"
+        ? u"Toggle ManHunt Gravity (ON) "
+        : u"Toggle ManHunt Gravity (OFF)"
     );
 
     // Collision Toggles
