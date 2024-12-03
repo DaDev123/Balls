@@ -74,6 +74,9 @@ void PuppetCapActor::update() {
 
 void PuppetCapActor::attackSensor(al::HitSensor* sender, al::HitSensor* receiver) {
     
+     if(al::isSensorPlayer(receiver) && !PuppetCapActor::sIsPlayerInSafeZone && PuppetCapActor::sInvincibilityFromPunchAnim < 1){
+        al::sendMsgEnemyAttack(receiver, sender);
+
     }else{
         auto* receiverHost = al::getSensorHost(receiver);
         auto* player = (PlayerActorHakoniwa*) al::getPlayerActor(receiverHost, 0);
