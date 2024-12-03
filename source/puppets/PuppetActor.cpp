@@ -1,3 +1,31 @@
+
+
+
+#include <cmath>
+#include <cstddef>
+#include "al/model/PartsModel.h"
+#include "al/util/SensorUtil.h"
+#include "game/Player/PlayerCostumeFunction.h"
+#include "game/Player/PlayerCostumeInfo.h"
+#include "rs/util/SensorUtil.h"
+#include "server/Client.hpp"
+#include "al/LiveActor/LiveActor.h"
+#include "al/layout/BalloonMessage.h"
+#include "al/layout/LayoutInitInfo.h"
+#include "al/string/StringTmp.h"
+#include "al/util.hpp"
+#include "al/util/LiveActorUtil.h"
+#include "algorithms/CaptureTypes.h"
+#include "logger.hpp"
+#include "actors/PuppetActor.h"
+#include "math/seadQuat.h"
+#include "math/seadVector.h"
+#include "server/freeze/FreezeTagMode.hpp"
+#include "server/gamemode/GameModeManager.hpp"
+#include "server/gamemode/GameModeBase.hpp"
+#include "server/hns/HideAndSeekMode.hpp"
+#include "server/snh/SardineMode.hpp"
+#include "game/HakoniwaSequence/HakoniwaSequence.h"
 #include "actors/PuppetActor.h"
 #include "server/Client.hpp"
 
