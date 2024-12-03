@@ -144,8 +144,6 @@ B59E28 B seadPrintHook  // sead::system::print
 
 249c70 BL healThreeTimes
 
-1F7594 BL compassPlayerDirHook
-
 43f83c NOP
 
 //53896c NOP
