@@ -15,6 +15,11 @@
 bool PuppetCapActor::sIsPlayerInSafeZone = true;
 int PuppetCapActor::sInvincibilityFromPunchAnim;
 
+class PlayerDamageKeeper{
+    public:
+        void damage(int);
+};
+
 PuppetCapActor::PuppetCapActor(const char* name) : al::LiveActor(name) {}
 
 void PuppetCapActor::init(al::ActorInitInfo const& initInfo) {
