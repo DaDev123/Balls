@@ -57,26 +57,6 @@ StageSceneStateServerConfig::StageSceneStateServerConfig(
 
     mMainOptionsList->addStringData(getMainMenuOptions(), "TxtContent");
 
-    // gamemode select menu
-
-    mModeSelect     = new SimpleLayoutMenu("GamemodeSelectMenu", "OptionSelect", initInfo, 0, false);
-    mModeSelectList = new CommonVerticalList(mModeSelect, initInfo, true);
-
-    al::setPaneString(mModeSelect, "TxtOption", u"Gamemode Selection", 0);
-
-    const int modeCount = GameModeFactory::getModeCount() - 1;
-
-    mModeSelectList->initDataNoResetSelected(modeCount);
-
-    auto* modeSelectOptions = new sead::SafeArray<sead::WFixedSafeString<0x200>, modeCount>();
-
-    for (size_t i = 0; i < modeCount; i++) {
-        const char* modeName = GameModeFactory::getModeName(i + 1);
-        modeSelectOptions->mBuffer[i].convertFromMultiByteString(modeName, strlen(modeName));
-    }
-
-    mModeSelectList->addStringData(modeSelectOptions->mBuffer, "TxtContent");
-
     // gamemode config menu
     GameModeConfigMenuFactory factory("GameModeConfigFactory");
     for (int mode = 0; mode < factory.getMenuCount(); mode++) {

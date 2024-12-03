@@ -47,8 +47,8 @@ public:
 
     static bool hasMarioCollision() { return instance()->mCurModeBase ? instance()->mCurModeBase->hasMarioCollision() : true;  }
     static bool hasMarioBounce()    { return instance()->mCurModeBase ? instance()->mCurModeBase->hasMarioBounce()    : true;  }
-    static bool hasCappyCollision() { return instance()->mCurModeBase ? instance()->mCurModeBase->hasCappyCollision() : false; }
-    static bool hasCappyBounce()    { return instance()->mCurModeBase ? instance()->mCurModeBase->hasCappyBounce()    : false; }
+    static bool hasCappyCollision() { return instance()->mCurModeBase ? instance()->mCurModeBase->hasCappyCollision() : true; }
+    static bool hasCappyBounce()    { return instance()->mCurModeBase ? instance()->mCurModeBase->hasCappyBounce()    : true; }
 
 private:
     sead::Heap* mHeap = nullptr;
