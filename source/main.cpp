@@ -407,6 +407,7 @@ bool threadInit(HakoniwaSequence* mainSeq) { // hook for initializing client cla
 
 bool hakoniwaSequenceHook(HakoniwaSequence* sequence) {
     StageScene* stageScene = (StageScene*)sequence->curScene;
+    globalScene = stageScene;
 
     bool isFirstStep = al::isFirstStep(sequence);
 
