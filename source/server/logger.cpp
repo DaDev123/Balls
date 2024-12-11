@@ -1,7 +1,9 @@
 #include "logger.hpp"
-#include "al/util/ControllerUtil.h"
+
 #include "helpers.hpp"
-#include "nn/result.h"
+#include "nn/nifm.h"
+#include "nn/socket.h"
+#include "nn/util.h"
 
 // If connection fails, try X ports above the specified one
 // Useful for debugging multple clients on the same machine
@@ -19,7 +21,7 @@ void Logger::createInstance() {
 
 nn::Result Logger::init(const char* ip, u16 port) {
 
-    sock_ip = ip;
+    strcpy(this->sock_ip, ip);
 
     this->port = port;
 
@@ -54,9 +56,6 @@ nn::Result Logger::init(const char* ip, u16 port) {
     serverAddress.address = hostAddress;
     serverAddress.port = nn::socket::InetHtons(this->port);
     serverAddress.family = 2;
-
-    if(al::isPadHoldZR(-1))
-        return -1;
 
     nn::Result result;
     bool connected = false;
@@ -115,7 +114,7 @@ void Logger::log(const char* fmt, ...) {
 }
 
 bool Logger::pingSocket() {
-    return socket_log("ping") > 0; // if value is greater than zero, than the socket recieved our message, otherwise the connection was lost.
+    return socket_log("ping") > 0; // if value is greater than zero, than the socket received our message, otherwise the connection was lost.
 }
 
 void tryInitSocket() {

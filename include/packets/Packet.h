@@ -1,8 +1,5 @@
 #pragma once
 
-#include "sead/math/seadVector.h"
-#include "sead/math/seadQuat.h"
-
 #include "nn/account.h"
 
 #include "types.h"
@@ -26,11 +23,13 @@ enum PacketType : short {
     CAPTUREINF,
     CHANGESTAGE,
     CMD,
-    End // end of enum for bounds checking
+    UDPINIT,
+    HOLEPUNCH,
+    End, // end of enum for bounds checking
 };
 
 // attribute otherwise the build log is spammed with unused warnings
-USED static const char *packetNames[] = {
+USED static const char* packetNames[] = {
     "Unknown",
     "Client Initialization",
     "Player Info",
@@ -43,43 +42,23 @@ USED static const char *packetNames[] = {
     "Moon Collection",
     "Capture Info",
     "Change Stage",
-    "Server Command"
+    "Server Command",
+    "Udp Initialization",
+    "Hole punch",
 };
 
 enum SenderType {
     SERVER,
-    CLIENT
+    CLIENT,
 };
 
 enum ConnectionTypes {
     INIT,
-    RECONNECT
+    RECONNECT,
 };
-
-// unused
-/*
-static const char *senderNames[] = {
-    "Server",
-    "Client"
-};
-*/
 
 struct PACKED Packet {
     nn::account::Uid mUserID; // User ID of the packet owner
     PacketType mType = PacketType::UNKNOWN;
     short mPacketSize = 0; // represents packet size without size of header
 };
-
-// all packet types
-
-#include "packets/PlayerInfPacket.h"
-#include "packets/PlayerConnect.h"
-#include "packets/PlayerDC.h"
-#include "packets/GameInf.h"
-#include "packets/CostumeInf.h"
-#include "packets/ServerCommand.h"
-#include "packets/ShineCollect.h"
-#include "packets/CaptureInf.h"
-#include "packets/HackCapInf.h"
-#include "packets/ChangeStagePacket.h"
-#include "packets/InitPacket.h"
