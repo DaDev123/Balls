@@ -3,10 +3,8 @@
 #include "al/layout/LayoutActor.h"
 #include "al/layout/LayoutInitInfo.h"
 #include "al/util/NerveUtil.h"
-
 #include "game/WorldList/WorldResourceLoader.h"
-
-#include "sead/math/seadVector.h"
+#include "math/seadVector.h"
 
 namespace speedboot {
     class SpeedbootLoad : public al::LayoutActor {

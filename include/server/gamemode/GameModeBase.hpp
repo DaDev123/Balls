@@ -1,18 +1,21 @@
 #pragma once
 
+#include <cmath>
+#include <math.h>
+#include "al/sensor/HitSensor.h"
+#include "al/sensor/SensorMsg.h"
+#include "puppets/PuppetHolder.hpp"
 #include "al/actor/IUseName.h"
 #include "al/scene/SceneObjHolder.h"
-
+#include "game/GameData/GameDataHolder.h"
 #include "game/HakoniwaSequence/HakoniwaSequence.h"
 #include "game/StageScene/StageScene.h"
-
-#include "puppets/PuppetHolder.hpp"
-
+#include "prim/seadSafeString.h"
 #include "sead/devenv/seadDebugFontMgrNvn.h"
+#include "sead/gfx/seadPrimitiveRenderer.h"
 #include "sead/gfx/seadTextWriter.h"
-#include "sead/prim/seadSafeString.h"
-
 #include "server/gamemode/GameMode.hpp"
+#include "server/gamemode/GameModeConfigMenu.hpp"
 #include "server/gamemode/GameModeInitInfo.hpp"
 
 // base class for all gamemodes, must inherit from this to have a functional gamemode
@@ -45,6 +48,10 @@ public:
     virtual void debugMenuControls(sead::TextWriter* gTextWriter) {}
     virtual void debugMenuPlayer(sead::TextWriter* gTextWriter, PuppetInfo* other = nullptr) {}
 
+    virtual bool receiveMsg(const al::SensorMsg* msg, al::HitSensor* source, al::HitSensor* target) { return false; };
+
+    virtual bool attackSensor(al::HitSensor* source, al::HitSensor* target) { return false; };
+
     virtual void processPacket(Packet* packet) {};
 
     virtual Packet* createPacket() { return nullptr; }
@@ -55,10 +62,8 @@ public:
     virtual bool hasCustomCamera() const { return false; }
     virtual void createCustomCameraTicket(al::CameraDirector* director) {}
 
-    virtual bool hasMarioCollision() { return true;  }
-    virtual bool hasMarioBounce()    { return true;  }
-    virtual bool hasCappyCollision() { return false; }
-    virtual bool hasCappyBounce()    { return false; }
+    bool mIsUsePuppetSensor;
+    bool mIsUseCapSensor;
 
 protected:
     sead::FixedSafeString<0x10> mName;

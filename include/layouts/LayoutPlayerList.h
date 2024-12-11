@@ -1,5 +1,6 @@
 #pragma once
 
+#include "types.h"
 #include "server/gamemode/GameMode.hpp"
 
 class LayoutPlayerList {

@@ -1,9 +1,6 @@
 #include "logger.hpp"
-
 #include "helpers.hpp"
-#include "nn/nifm.h"
-#include "nn/socket.h"
-#include "nn/util.h"
+#include "nn/result.h"
 
 // If connection fails, try X ports above the specified one
 // Useful for debugging multple clients on the same machine

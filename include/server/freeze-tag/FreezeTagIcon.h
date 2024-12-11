@@ -3,13 +3,12 @@
 #include "al/layout/LayoutActor.h"
 #include "al/layout/LayoutInitInfo.h"
 #include "al/util/NerveUtil.h"
-#include "sead/container/seadPtrArray.h"
-#include "sead/math/seadVector.h"
+#include "container/seadPtrArray.h"
+#include "math/seadVector.h"
 
 class FreezeTagInfo;
-class FreezeTagRunnerSlot;
 class FreezeTagChaserSlot;
-class FreezeTagOtherSlot;
+class FreezeTagRunnerSlot;
 
 // TODO: kill layout if going through loading zone or paused
 
@@ -47,10 +46,8 @@ class FreezeTagIcon : public al::LayoutActor {
         // Runner and chaser display info
         sead::PtrArray<FreezeTagRunnerSlot> mRunnerSlots;
         sead::PtrArray<FreezeTagChaserSlot> mChaserSlots;
-        sead::PtrArray<FreezeTagOtherSlot>  mOtherSlots;
         const int mMaxRunners = 9;
         const int mMaxChasers = 9;
-        const int mMaxOthers  = 9;
 
         // Spectate and general info
         bool        mIsRunner         = true;

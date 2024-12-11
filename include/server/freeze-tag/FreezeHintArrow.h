@@ -1,9 +1,13 @@
 #pragma once
 
 #include <stdint.h>
+#include "al/LiveActor/LiveActor.h"
+#include "al/sensor/SensorMsg.h"
 #include "al/util.hpp"
+#include "al/util/NerveUtil.h"
 #include "game/Player/PlayerActorBase.h"
-#include "sead/math/seadVector.h"
+#include "math/seadVector.h"
+#include "rs/util/SensorUtil.h"
 
 class FreezeTagInfo;
 
@@ -29,9 +33,9 @@ class FreezeHintArrow : public al::LiveActor {
         sead::Vector3f*  mArrowTrans;
         sead::Vector3f   mActorUp = sead::Vector3f::ey;
 
-        const float mMinDistanceSq = 10562500.f; // non-squared: 3250.0
-        float       mDistanceSq    = -1.f;
-        float       mSize          = 0.f;
+        const float mMinDistance = 3250.f;
+        float       mDistance    = -1.f;
+        float       mSize        = 0.f;
 
         bool    mIsActive           = true;
         bool    mIsVisible          = false;

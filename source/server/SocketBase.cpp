@@ -1,7 +1,6 @@
 #include "SocketBase.hpp"
-
 #include <cstring>
-#include "nn/socket.h"
+#include "nn/result.h"
 #include "types.h"
 
 SocketBase::SocketBase(const char *name)

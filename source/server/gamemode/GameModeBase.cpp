@@ -1,5 +1,4 @@
 #include "server/gamemode/GameModeBase.hpp"
-
 #include "server/Client.hpp"
 
 void GameModeBase::init(const GameModeInitInfo& info) {

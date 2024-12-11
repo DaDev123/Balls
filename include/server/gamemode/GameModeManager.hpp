@@ -12,6 +12,7 @@
 class GameModeManager {
     SEAD_SINGLETON_DISPOSER(GameModeManager)
     GameModeManager();
+    ~GameModeManager();
 
 public:
     void setMode(GameMode mode);
@@ -28,6 +29,10 @@ public:
     template<class T> T* getInfo() const { return static_cast<T*>(mModeInfo); }
     void setInfo(GameModeInfoBase* info) { mModeInfo = info; }
 
+    static bool tryReceivePuppetMsg(const al::SensorMsg* msg, al::HitSensor* source, al::HitSensor* target);
+    static bool tryReceiveCapMsg(const al::SensorMsg* msg, al::HitSensor* source, al::HitSensor* target);
+    static bool tryAttackPuppetSensor(al::HitSensor* source, al::HitSensor* target);
+    static bool tryAttackCapSensor(al::HitSensor* source, al::HitSensor* target);
     static void processModePacket(Packet* packet);
     static Packet* createModePacket();
 
@@ -44,11 +49,6 @@ public:
     bool isModeRequireUI();
     bool isPaused() const { return mPaused; }
     bool wasSceneTrans() const { return mWasSceneTrans; }
-
-    static bool hasMarioCollision() { return instance()->mCurModeBase ? instance()->mCurModeBase->hasMarioCollision() : true;  }
-    static bool hasMarioBounce()    { return instance()->mCurModeBase ? instance()->mCurModeBase->hasMarioBounce()    : true;  }
-    static bool hasCappyCollision() { return instance()->mCurModeBase ? instance()->mCurModeBase->hasCappyCollision() : false; }
-    static bool hasCappyBounce()    { return instance()->mCurModeBase ? instance()->mCurModeBase->hasCappyBounce()    : false; }
 
 private:
     sead::Heap* mHeap = nullptr;

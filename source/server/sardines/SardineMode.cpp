@@ -1,23 +1,30 @@
 #include "server/sardines/SardineMode.hpp"
-
+#include "al/async/FunctorV0M.hpp"
 #include "al/util.hpp"
-
+#include "al/util/ControllerUtil.h"
+#include "al/util/LiveActorUtil.h"
+#include "al/util/MathUtil.h"
+#include "game/GameData/GameDataFunction.h"
+#include "game/GameData/GameDataHolderAccessor.h"
+#include "game/Layouts/CoinCounter.h"
+#include "game/Layouts/MapMini.h"
 #include "game/Player/PlayerActorBase.h"
 #include "game/Player/PlayerActorHakoniwa.h"
 #include "game/Player/PlayerFunction.h"
-
+#include "heap/seadHeapMgr.h"
 #include "logger.hpp"
-
+#include "math/seadVector.h"
 #include "rs/util.hpp"
-
-#include "sead/heap/seadHeapMgr.h"
-#include "sead/math/seadVector.h"
-
 #include "server/Client.hpp"
 #include "server/gamemode/GameModeFactory.hpp"
 #include "server/gamemode/GameModeManager.hpp"
 #include "server/gamemode/GameModeTimer.hpp"
+#include "server/sardines/SardineConfigMenu.hpp"
 #include "server/sardines/SardinePacket.hpp"
+#include <cmath>
+#include <heap/seadHeap.h>
+
+#include "basis/seadNew.h"
 
 SardineMode::SardineMode(const char* name) : GameModeBase(name) {}
 
@@ -104,7 +111,7 @@ Packet* SardineMode::createPacket() {
 
     SardinePacket* packet = new SardinePacket();
     packet->mUserID    = Client::getClientId();
-    packet->isIt       = isPlayerPack();
+    packet->isIt       = isPlayerIt();
     packet->seconds    = mInfo->mHidingTime.mSeconds;
     packet->minutes    = mInfo->mHidingTime.mMinutes + mInfo->mHidingTime.mHours * 60;
     packet->setUpdateType(static_cast<SardineUpdateType>(SardineUpdateType::STATE | SardineUpdateType::TIME));
@@ -137,7 +144,7 @@ void SardineMode::unpause() {
 
     mModeLayout->appear();
 
-    if (isPlayerPack()) {
+    if (mInfo->mIsIt) {
         mModeTimer->enableTimer();
         mModeLayout->showPack();
     } else {
@@ -151,10 +158,9 @@ void SardineMode::update() {
 
     bool isYukimaru = !playerBase->getPlayerInfo(); // if PlayerInfo is a nullptr, that means we're dealing with the bound bowl racer
 
-    PuppetInfo* closestPackPlayer = nullptr;
-    float closestDistanceSq = 0.f;
-
-    bool isPackEmpty = true;
+    float highPuppetDistance = -1.f;
+    int farPuppetID = -1;
+    bool isAnybodyElseIt = false;
 
     if (mIsFirstFrame) {
         if (mInfo->mIsUseGravityCam && mTicket) {
@@ -164,8 +170,6 @@ void SardineMode::update() {
     }
 
     if (playerBase) {
-        sead::Vector3f playerPos = al::getTrans(playerBase);
-
         for (size_t i = 0; i < (size_t)mPuppetHolder->getSize(); i++) {
             PuppetInfo* other = Client::getPuppetInfo(i);
             if (!other) {
@@ -173,7 +177,7 @@ void SardineMode::update() {
                 break;
             }
 
-            if (!other->isConnected || other->snhIsAlone()) {
+            if (!other->isConnected || !other->isIt) {
                 continue;
             }
 
@@ -181,54 +185,54 @@ void SardineMode::update() {
                 continue;
             }
 
-            isPackEmpty = false;
+            isAnybodyElseIt = true;
 
-            if (!other->isInSameStage || isYukimaru) {
+            if (!other->isInSameStage) {
                 continue;
             }
 
-             // if the pack player catches us into the pack
-             if (  isPlayerAlone()                                                          // we're a single sardine
-                && other->is2D == ((PlayerActorHakoniwa*)playerBase)->mDimKeeper->is2DModel // we are in the same dimension
-                && !PlayerFunction::isPlayerDeadStatus(playerBase)                          // we're not dead
+            float pupDist = al::calcDistance(playerBase, other->playerPos);
+
+            if (highPuppetDistance < pupDist || highPuppetDistance == -1) {
+                highPuppetDistance = pupDist;
+                farPuppetID        = i;
+            }
+
+            if (
+                !mInfo->mIsIt
+                && !isYukimaru
+                && pupDist < 300.0f
+                && other->is2D == ((PlayerActorHakoniwa*)playerBase)->mDimKeeper->is2DModel
+                && !PlayerFunction::isPlayerDeadStatus(playerBase)
             ) {
-                // in range?
-                float distanceSq = vecDistanceSq(playerPos, other->playerPos);
-                if (distanceSq < 90000.0f) { // non-squared: 300.0
-                    updateTagState(true);
-                    break;
-                }
-            } else if (isPlayerPack() && mInfo->mIsTether) {
-                // find the nearest other pack player for snapping and/or pulling
-                float distanceSq = vecDistanceSq(playerPos, other->playerPos);
-                if (!closestPackPlayer || closestDistanceSq < distanceSq) {
-                    closestDistanceSq = distanceSq;
-                    closestPackPlayer = other;
-                }
+                updateTagState(true);
             }
         }
     }
 
     mModeTimer->updateTimer();
 
-    // Tin detaching (become a single sardine again, when dead or snapping)
-    if (isPlayerPack() && (
+    // Tin detaching
+    if (mInfo->mIsIt && (
         PlayerFunction::isPlayerDeadStatus(playerBase)
         || (
             mInfo->mIsTether
             && mInfo->mIsTetherSnap
-            && pullDistanceMaxSq < closestDistanceSq
+            && pullDistanceMax < highPuppetDistance
         )
     )) {
         updateTagState(false);
     }
 
-    // Tether: player pulling (apply a force to the nearest other pack players)
-    if (closestPackPlayer && pullDistanceMinSq <= closestDistanceSq) {
+    // Player pulling
+    if (pullDistanceMin <= highPuppetDistance && mInfo->mIsIt && farPuppetID != -1 && mInfo->mIsTether) {
+        sead::Vector3f  target    = Client::getPuppetInfo(farPuppetID)->playerPos;
         sead::Vector3f* playerPos = al::getTransPtr(playerBase);
-        sead::Vector3f  direction = closestPackPlayer->playerPos - *playerPos;
+        sead::Vector3f  direction = target - *playerPos;
+
         al::normalize(&direction);
-        playerPos->add(direction * ((sqrt(closestDistanceSq) - pullDistanceMin) / pullPowerRate));
+
+        playerPos->add(direction * ((al::calcDistance(playerBase, target) - pullDistanceMin) / pullPowerRate));
     }
 
     // Gravity
@@ -258,7 +262,7 @@ void SardineMode::update() {
 
     // Switch roles
     if (al::isPadTriggerUp(-1) && !al::isPadHoldZL(-1)) {
-        updateTagState(isPlayerAlone() && isPackEmpty);
+        updateTagState(!mInfo->mIsIt && !isAnybodyElseIt);
     }
 
     mInfo->mHidingTime = mModeTimer->getTime();
@@ -267,7 +271,7 @@ void SardineMode::update() {
 bool SardineMode::showNameTag(PuppetInfo* other) {
     return (
         (other->gameMode != mMode && other->gameMode != GameMode::LEGACY)
-        || (isPlayerPack() && other->snhIsPack())
+        || (isPlayerIt() && other->isIt)
     );
 }
 
@@ -283,7 +287,7 @@ void SardineMode::debugMenuControls(sead::TextWriter* gTextWriter) {
 void SardineMode::updateTagState(bool isIt) {
     mInfo->mIsIt = isIt;
 
-    if (isPlayerPack()) {
+    if (isIt) {
         mModeTimer->enableTimer();
         mModeLayout->showPack();
     } else {

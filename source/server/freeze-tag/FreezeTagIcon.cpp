@@ -1,21 +1,22 @@
 #include "server/freeze-tag/FreezeTagIcon.h"
-
 #include "al/string/StringTmp.h"
 #include "al/util.hpp"
-
-#include "server/DeltaTime.hpp"
+#include "al/util/MathUtil.h"
+#include "main.hpp"
+#include "rs/util.hpp"
 #include "server/gamemode/GameModeManager.hpp"
 #include "server/freeze-tag/FreezeTagInfo.h"
-#include "server/freeze-tag/FreezeTagRunnerSlot.h"
 #include "server/freeze-tag/FreezeTagChaserSlot.h"
-#include "server/freeze-tag/FreezeTagOtherSlot.h"
+#include "server/freeze-tag/FreezeTagRunnerSlot.h"
+#include <cstdio>
+#include <cstring>
 
 FreezeTagIcon::FreezeTagIcon(const char* name, const al::LayoutInitInfo& initInfo) : al::LayoutActor(name) {
     al::initLayoutActor(this, initInfo, "FreezeTagIcon", 0);
     al::hidePane(this, "Endgame");
 
     mInfo     = GameModeManager::instance()->getInfo<FreezeTagInfo>();
-    mIsRunner = mInfo->isPlayerRunner();
+    mIsRunner = mInfo->mIsPlayerRunner;
 
     mRunnerSlots.tryAllocBuffer(mMaxRunners, al::getSceneHeap());
     for (int i = 0; i < mMaxRunners; i++) {
@@ -29,13 +30,6 @@ FreezeTagIcon::FreezeTagIcon(const char* name, const al::LayoutInitInfo& initInf
         FreezeTagChaserSlot* newSlot = new (al::getSceneHeap()) FreezeTagChaserSlot("ChaserSlot", initInfo);
         newSlot->init(i);
         mChaserSlots.pushBack(newSlot);
-    }
-
-    mOtherSlots.tryAllocBuffer(mMaxOthers, al::getSceneHeap());
-    for (int i = 0; i < mMaxOthers; i++) {
-        FreezeTagOtherSlot* newSlot = new (al::getSceneHeap()) FreezeTagOtherSlot("OtherSlot", initInfo);
-        newSlot->init(i);
-        mOtherSlots.pushBack(newSlot);
     }
 
     mSpectateName = nullptr;
@@ -56,10 +50,6 @@ void FreezeTagIcon::appear() {
         mChaserSlots.at(i)->tryStart();
     }
 
-    for (int i = 0; i < mMaxOthers; i++) {
-        mOtherSlots.at(i)->tryStart();
-    }
-
     al::LayoutActor::appear();
 }
 
@@ -73,10 +63,6 @@ bool FreezeTagIcon::tryEnd() {
 
         for (int i = 0; i < mMaxChasers; i++) {
             mChaserSlots.at(i)->tryEnd();
-        }
-
-        for (int i = 0; i < mMaxOthers; i++) {
-            mOtherSlots.at(i)->tryEnd();
         }
 
         return true;
@@ -118,14 +104,6 @@ void FreezeTagIcon::exeWait() {
     if (mScoreEventTime >= 0.f) {
         mScoreEventTime += Time::deltaTime;
 
-        if (mScoreEventValue != 0) {
-            al::setPaneLocalScale(this, "TxtScoreNum",  { 1.f, 1.f });
-            al::setPaneLocalScale(this, "PicScorePlus", { 1.f, 1.f });
-        } else {
-            al::setPaneLocalScale(this, "TxtScoreNum",  { 0.f, 0.f });
-            al::setPaneLocalScale(this, "PicScorePlus", { 0.f, 0.f });
-        }
-
         if (mScoreEventTime > 3.75f) {
             mScoreEventValue = 0;
         }
@@ -136,7 +114,7 @@ void FreezeTagIcon::exeWait() {
             ? sead::Vector3f(   0.f, 235.f, 0.f)
             : sead::Vector3f(-650.f, 420.f, 0.f)
         );
-        if (mInfo->isPlayerChaser()) {
+        if (!mInfo->mIsPlayerRunner) {
             targetPos.x *= -1.f;
         }
 
@@ -150,7 +128,7 @@ void FreezeTagIcon::exeWait() {
     }
 
     // Spectate UI
-    if (mInfo->isPlayerFrozen() && mSpectateName) {
+    if (mInfo->mIsPlayerFreeze && mSpectateName) {
         al::setPaneStringFormat(this, "TxtSpectateTarget", "%s", mSpectateName);
     }
 
@@ -170,17 +148,6 @@ void FreezeTagIcon::exeWait() {
     if (!mEndgameIsDisplay && !al::isHidePane(this, "Endgame")) {
         al::hidePane(this, "Endgame");
     }
-
-    // Other Players
-    if (mInfo->isRound() || mInfo->others() == 0) {
-        if (!al::isHidePane(this, "PicHeaderOther")) {
-            al::hidePane(this, "PicHeaderOther");
-        }
-    } else {
-        if (al::isHidePane(this, "PicHeaderOther")) {
-            al::showPane(this, "PicHeaderOther");
-        }
-    }
 }
 
 void FreezeTagIcon::queueScoreEvent(int eventValue, const char* eventDesc) {
@@ -196,7 +163,7 @@ void FreezeTagIcon::queueScoreEvent(int eventValue, const char* eventDesc) {
 
 void FreezeTagIcon::setFreezeOverlayHeight() {
     // Show or hide the frozen UI overlay (frozen borders on top and bottom of the screen when being frozen)
-    float targetHeight = mInfo->isPlayerFrozen() ? 360.f : 415.f;
+    float targetHeight = mInfo->mIsPlayerFreeze ? 360.f : 415.f;
     mFreezeOverlayHeight = al::lerpValue(mFreezeOverlayHeight, targetHeight, 0.08f);
     al::setPaneLocalTrans(this, "PicFreezeOverlayTop", { 0.f, mFreezeOverlayHeight + 15.f, 0.f });
     al::setPaneLocalTrans(this, "PicFreezeOverlayBot", { 0.f, -mFreezeOverlayHeight, 0.f });
@@ -205,8 +172,8 @@ void FreezeTagIcon::setFreezeOverlayHeight() {
 void FreezeTagIcon::setSpectateOverlayHeight() {
     // Show or hide the spectator UI
     float targetHeight = (
-           mInfo->isPlayerFrozen()
-        && mInfo->runners() > 1
+        mInfo->mIsPlayerFreeze
+        && mInfo->mRunnerPlayers.size() > 0
         && !mEndgameIsDisplay
         ? -250.f
         : -400.f
@@ -218,7 +185,7 @@ void FreezeTagIcon::setSpectateOverlayHeight() {
 void FreezeTagIcon::setRoundTimerOverlay() {
     // If round is active, set the timer's height on screen
     float targetHeight = (
-           mInfo->isRound()
+        mInfo->mIsRound
         && !mEndgameIsDisplay
         ? 330.f
         : 390.f
@@ -228,7 +195,7 @@ void FreezeTagIcon::setRoundTimerOverlay() {
 
     // If time remaining is less than one minute, scale it up to be larger
     float targetScale = (
-           mInfo->isRound()
+        mInfo->mIsRound
         && !mEndgameIsDisplay
         && mInfo->mRoundTimer.mMinutes <= 0
         ? 1.66f
@@ -238,7 +205,7 @@ void FreezeTagIcon::setRoundTimerOverlay() {
     al::setPaneLocalScale(this, "RoundTimer", { mRoundTimerScale, mRoundTimerScale });
 
     // Spin the inside of the clock if a round is going
-    if (mInfo->isRound()) {
+    if (mInfo->mIsRound) {
         mRoundTimerClockInsideSpin -= 1.2f;
         if (mRoundTimerClockInsideSpin < -360.f) {
             mRoundTimerClockInsideSpin += 360.f;

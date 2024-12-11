@@ -1,15 +1,16 @@
 #include "server/freeze-tag/FreezeTagMode.hpp"
-
 #include "al/util.hpp"
+#include "al/util/LiveActorUtil.h"
 #include "al/util/RandomUtil.h"
+#include "math/seadVector.h"
+#include "puppets/PuppetInfo.h"
 #include "server/gamemode/GameModeManager.hpp"
-#include "rs/util.hpp"
+#include "server/freeze-tag/FreezeTagIcon.h"
+#include "al/alCollisionUtil.h"
 
 void FreezeTagMode::startRound(int roundMinutes) {
     mInfo->mIsRound = true;
     mInfo->mFreezeCount = 0;
-
-    mInvulnTime = 0.f;
 
     mModeTimer->enableTimer();
     mModeTimer->disableControl();
@@ -17,15 +18,6 @@ void FreezeTagMode::startRound(int roundMinutes) {
 
     // Start timer at roundMinutes - 1s (to not instantly set off a score event that happens every full minute)
     mModeTimer->setTime(0.f, 59, roundMinutes - 1, 0);
-    mInfo->mRoundTimer = mModeTimer->getTime();
-
-    // remember who is part of this round
-    for (int i = 0; i < mInfo->mRunnerPlayers.size(); i++) {
-        mInfo->mRunnerPlayers.at(i)->isFreezeInRound = true;
-    }
-    for (int i = 0; i < mInfo->mChaserPlayers.size(); i++) {
-        mInfo->mChaserPlayers.at(i)->isFreezeInRound = true;
-    }
 }
 
 void FreezeTagMode::endRound(bool isAbort) {
@@ -34,9 +26,9 @@ void FreezeTagMode::endRound(bool isAbort) {
 
     mModeTimer->disableTimer();
 
-    if (!isWipeout()) {
+    if (!mIsEndgameActive) {
         // transform: chaser => runner
-        if (isPlayerChaser()) {
+        if (!mInfo->mIsPlayerRunner) {
             mInfo->mIsPlayerRunner = true;
             sendFreezePacket(FreezeUpdateType::PLAYER);
             return;
@@ -48,14 +40,9 @@ void FreezeTagMode::endRound(bool isAbort) {
         }
 
         // unfreeze
-        if (isPlayerFrozen()) {
+        if (mInfo->mIsPlayerFreeze) {
             trySetPlayerRunnerState(FreezeState::ALIVE);
         }
-    }
-
-    // forget who was part of this round
-    for (int i = 0; i < mPuppetHolder->getSize(); i++) {
-        Client::getPuppetInfo(i)->isFreezeInRound = false;
     }
 }
 
@@ -63,7 +50,7 @@ void FreezeTagMode::endRound(bool isAbort) {
  * SET THE RUNNER PLAYER'S FROZEN/ALIVE STATE
  */
 bool FreezeTagMode::trySetPlayerRunnerState(FreezeState newState) {
-    if (mInfo->mIsPlayerFreeze == newState || isPlayerChaser()) {
+    if (mInfo->mIsPlayerFreeze == newState || !mInfo->mIsPlayerRunner) {
         return false;
     }
 
@@ -78,9 +65,7 @@ bool FreezeTagMode::trySetPlayerRunnerState(FreezeState newState) {
         mInfo->mIsPlayerFreeze = FreezeState::ALIVE;
 
         player->endDemoPuppetable();
-
-        sendFreezePacket(FreezeUpdateType::PLAYER);
-    } else if (!isRound()) {
+    } else if (!mInfo->mIsRound) {
         return false;
     } else {
         mInfo->mIsPlayerFreeze = FreezeState::FREEZE;
@@ -97,18 +82,12 @@ bool FreezeTagMode::trySetPlayerRunnerState(FreezeState newState) {
         mSpectateIndex = -1;
         mInfo->mFreezeCount++;
 
-        sendFreezePacket(FreezeUpdateType::PLAYER);
-
         if (areAllOtherRunnersFrozen(nullptr)) {
-            // if there is only one runner, then end the round for legacy clients (new clients do this themselves)
-            if (1 == runners()) {
-                mCancelOnlyLegacy = true;
-                sendFreezePacket(FreezeUpdateType::ROUNDCANCEL);
-            }
-
             tryStartEndgameEvent();
         }
     }
+
+    sendFreezePacket(FreezeUpdateType::PLAYER);
 
     return true;
 }
@@ -134,7 +113,7 @@ void FreezeTagMode::tryStartEndgameEvent() {
     rs::faceToCamera(player);
     player->mPlayerAnimator->endSubAnim();
 
-    if (isPlayerRunner()) {
+    if (mInfo->mIsPlayerRunner) {
         player->mPlayerAnimator->startAnim("RaceResultLose");
         trySetPostProcessingType(FreezePostProcessingType::PPENDGAMELOSE);
     } else {
@@ -165,7 +144,7 @@ bool FreezeTagMode::tryStartRecoveryEvent(bool isEndgame) {
 
     if (!isEndgame) {
         mRecoverySafetyPoint = player->mPlayerRecoverySafetyPoint->mSafetyPointPos;
-        if (isPlayerRunner() && isRound()) {
+        if (mInfo->mIsPlayerRunner && mInfo->mIsRound) {
             sendFreezePacket(FreezeUpdateType::FALLOFF);
         }
     } else {
@@ -190,7 +169,7 @@ bool FreezeTagMode::tryEndRecoveryEvent() {
     }
 
     // Set the player to frozen if they are a runner AND they had a valid recovery point
-    if (isRound() && isPlayerRunner() && mRecoverySafetyPoint != sead::Vector3f::zero) {
+    if (mInfo->mIsPlayerRunner && mRecoverySafetyPoint != sead::Vector3f::zero && mInfo->mIsRound) {
         trySetPlayerRunnerState(FreezeState::FREEZE);
         warpToRecoveryPoint(player);
     } else {
@@ -199,7 +178,7 @@ bool FreezeTagMode::tryEndRecoveryEvent() {
     }
 
     // If player is a chaser with a valid recovery point, teleport (and disable collisions)
-    if (isPlayerChaser() || !isRound()) {
+    if (!mInfo->mIsPlayerRunner || !mInfo->mIsRound) {
         player->startDemoPuppetable();
         if (mRecoverySafetyPoint != sead::Vector3f::zero) {
             warpToRecoveryPoint(player);
@@ -209,11 +188,11 @@ bool FreezeTagMode::tryEndRecoveryEvent() {
     }
 
     // If player is being made alive, force end demo puppet state
-    if (isPlayerUnfrozen()) {
+    if (!mInfo->mIsPlayerFreeze) {
         player->endDemoPuppetable();
     }
 
-    if (!isWipeout()) {
+    if (!mIsEndgameActive) {
         mModeLayout->hideEndgameScreen();
     }
 
@@ -230,41 +209,38 @@ void FreezeTagMode::tryScoreEvent(FreezeTagPacket* packet, PuppetInfo* other) {
     }
 
     // Only if the other player is a runner
-    if (!other || other->ftIsChaser()) {
+    if (!other || !other->isFreezeTagRunner) {
         return;
     }
 
     // Only if the frozen state of the other player changes
-    if (other->ftIsFrozen() == packet->isFreeze) {
+    if (other->isFreezeTagFreeze == packet->isFreeze) {
         return;
     }
 
     // Check if we unfreeze a fellow runner
     bool scoreUnfreeze = (
-           isPlayerRunner()         // we are a runner
-        && isPlayerUnfrozen()       // that is unfrozen and are touching another runner
-        && !other->ftHasFallenOff() // that was not frozen by falling off the map
-        && !packet->isFreeze        // which is unfreezing right now
-        && isRound()
-        && !isWipeout()
+            mInfo->mIsPlayerRunner      // we are a runner
+        && !mInfo->mIsPlayerFreeze      // that is unfrozen and are touching another runner
+        && !other->isFreezeTagFallenOff // that was not frozen by falling off the map
+        && !packet->isFreeze            // which is unfreezing right now
     );
 
     // Check if we freeze a runner as a chaser
     bool scoreFreeze = (
            !scoreUnfreeze
-        && isPlayerChaser() // we are a chaser touching a runner
-        && packet->isFreeze // which is freezing up right now
-        && (isRound() || isWipeout())
+        && !mInfo->mIsPlayerRunner // we are a chaser touching a runner
+        && packet->isFreeze        // which is freezing up right now
     );
 
     if (other->isInSameStage && (scoreUnfreeze || scoreFreeze)) {
         PlayerActorBase* playerBase = rs::getPlayerActor(mCurScene);
 
         // Calculate the distance to the other player
-        float distanceSq = playerBase ? vecDistanceSq(al::getTrans(playerBase), other->playerPos) : 999999.f;
+        float distance = playerBase ? al::calcDistance(playerBase, other->playerPos) : 999.f;
 
         // Only apply the score event if the runner is less than 600 units away
-        if (distanceSq < 360000.f) { // non-squared: 600.0
+        if (distance < 600.f) {
             if (scoreUnfreeze) {
                 mInfo->mPlayerTagScore.eventScoreUnfreeze();
             } else {
@@ -275,12 +251,6 @@ void FreezeTagMode::tryScoreEvent(FreezeTagPacket* packet, PuppetInfo* other) {
 
     // Checks if every runner is frozen, starts endgame sequence if so
     if (packet->isFreeze && areAllOtherRunnersFrozen(other)) {
-        // if there is only one runner, then end the round for legacy clients (new clients do this themselves)
-        if (1 == runners()) {
-            mCancelOnlyLegacy = true;
-            sendFreezePacket(FreezeUpdateType::ROUNDCANCEL);
-        }
-
         tryStartEndgameEvent();
     }
 }
@@ -319,16 +289,16 @@ bool FreezeTagMode::trySetPostProcessingType(FreezePostProcessingType type) {
 
 void FreezeTagMode::warpToRecoveryPoint(al::LiveActor* actor) {
     // warp to a random chaser if we are a runner during a round
-    if (isRound() && isPlayerRunner() && 0 < chasers()) {
-        int size = chasers();
+    if (mInfo->mIsRound && mInfo->mIsPlayerRunner && 0 < mInfo->mChaserPlayers.size()) {
+        int size = mInfo->mChaserPlayers.size();
         int rnd  = al::getRandom(size);
         int i    = rnd;
 
         do {
             // to be suitable the chaser needs to be connected and in the same stage
-            PuppetInfo* other = mInfo->mChaserPlayers.at(i);
-            if (other && other->isConnected && other->ftIsChaser() && other->isInSameStage) {
-                al::setTrans(actor, other->playerPos);
+            PuppetInfo* chaser = mInfo->mChaserPlayers.at(i);
+            if (chaser && chaser->isConnected && !chaser->isFreezeTagRunner && chaser->isInSameStage) {
+                al::setTrans(actor, chaser->playerPos);
                 return;
             }
             // check the next chaser, if the randomly chosen one is unsuitable

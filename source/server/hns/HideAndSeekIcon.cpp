@@ -1,7 +1,16 @@
 #include "server/hns/HideAndSeekIcon.h"
-
+#include <cstdio>
+#include <cstring>
+#include "puppets/PuppetInfo.h"
+#include "al/string/StringTmp.h"
+#include "prim/seadSafeString.h"
 #include "server/gamemode/GameModeManager.hpp"
+#include "server/gamemode/GameModeTimer.hpp"
+#include "server/Client.hpp"
 #include "al/util.hpp"
+#include "logger.hpp"
+#include "rs/util.hpp"
+#include "main.hpp"
 
 HideAndSeekIcon::HideAndSeekIcon(const char* name, const al::LayoutInitInfo& initInfo) : al::LayoutActor(name) {
     al::initLayoutActor(this, initInfo, "HideAndSeekIcon", 0);

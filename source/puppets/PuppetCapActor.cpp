@@ -1,16 +1,12 @@
 #include "actors/PuppetCapActor.h"
-
+#include "al/sensor/HitSensor.h"
 #include "al/util.hpp"
 #include "al/util/MathUtil.h"
-#include "al/util/SensorUtil.h"
-
-#include "game/Player/PlayerFunction.h"
-
+#include "math/seadVector.h"
 #include "rs/util/SensorUtil.h"
-
-#include "sead/math/seadVector.h"
-
+#include "al/util/SensorUtil.h"
 #include "server/gamemode/GameModeManager.hpp"
+#include "server/gamemode/GameModeBase.hpp"
 
 PuppetCapActor::PuppetCapActor(const char* name) : al::LiveActor(name) {}
 
@@ -73,7 +69,8 @@ void PuppetCapActor::update() {
 }
 
 void PuppetCapActor::attackSensor(al::HitSensor* sender, al::HitSensor* receiver) {
-    if (!GameModeManager::hasCappyCollision()) {
+    // prevent normal attack behavior if gamemode requires custom behavior
+    if (GameModeManager::tryAttackCapSensor(sender, receiver)) {
         return;
     }
 
@@ -83,7 +80,12 @@ void PuppetCapActor::attackSensor(al::HitSensor* sender, al::HitSensor* receiver
 }
 
 bool PuppetCapActor::receiveMsg(const al::SensorMsg* msg, al::HitSensor* sender, al::HitSensor* receiver) {
-    if (!GameModeManager::hasCappyBounce()) {
+    // try to use gamemode recieve logic, otherwise fallback to default behavior
+    if (GameModeManager::tryReceiveCapMsg(msg, sender, receiver)) {
+        return true;
+    }
+
+    if (GameModeManager::instance()->isModeAndActive(GameMode::FREEZETAG)) {
         return false;
     }
 
