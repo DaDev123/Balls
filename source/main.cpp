@@ -1,38 +1,50 @@
 #include "main.hpp"
+
 #include <cmath>
 #include <math.h>
+
+#include "actors/PuppetActor.h"
+
 #include "al/execute/ExecuteOrder.h"
 #include "al/execute/ExecuteTable.h"
 #include "al/execute/ExecuteTableHolderDraw.h"
-#include "al/util/GraphicsUtil.h"
-#include "container/seadSafeArray.h"
-#include "game/GameData/GameDataHolderAccessor.h"
-#include "game/Player/PlayerActorBase.h"
-#include "game/Player/PlayerActorHakoniwa.h"
-#include "game/Player/PlayerHackKeeper.h"
-#include "heap/seadHeap.h"
-#include "math/seadVector.h"
-#include "server/Client.hpp"
-#include "puppets/PuppetInfo.h"
-#include "actors/PuppetActor.h"
 #include "al/LiveActor/LiveActor.h"
 #include "al/util.hpp"
 #include "al/util/AudioUtil.h"
 #include "al/util/CameraUtil.h"
 #include "al/util/ControllerUtil.h"
+#include "al/util/GraphicsUtil.h"
 #include "al/util/LiveActorUtil.h"
 #include "al/util/NerveUtil.h"
+
 #include "debugMenu.hpp"
+
+#include "game/GameData/GameDataHolderAccessor.h"
 #include "game/GameData/GameDataFunction.h"
 #include "game/HakoniwaSequence/HakoniwaSequence.h"
+#include "game/Player/PlayerActorBase.h"
+#include "game/Player/PlayerActorHakoniwa.h"
 #include "game/Player/PlayerFunction.h"
+#include "game/Player/PlayerHackKeeper.h"
 #include "game/StageScene/StageScene.h"
+
 #include "helpers.hpp"
+
 #include "logger.hpp"
-#include "rs/util.hpp"
+
+#include "puppets/PuppetInfo.h"
+
+#include "sead/container/seadSafeArray.h"
+#include "sead/gfx/seadPrimitiveRenderer.h"
+#include "sead/heap/seadHeap.h"
+#include "sead/math/seadVector.h"
+
+#include "server/Client.hpp"
 #include "server/gamemode/GameModeBase.hpp"
-#include "server/gamemode/GameModeManager.hpp"
 #include "server/gamemode/GameModeFactory.hpp"
+#include "server/gamemode/GameModeManager.hpp"
+
+#include "rs/util.hpp"
 
 static int pInfSendTimer = 0;
 static int gameInfSendTimer = 0;
